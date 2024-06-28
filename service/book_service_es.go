@@ -1,8 +1,18 @@
 package service
 
-import "github.com/rezaif79-ri/echo-esearch/domain"
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log"
+	"strings"
+
+	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/rezaif79-ri/echo-esearch/domain"
+)
 
 type BookServiceES struct {
+	es *elasticsearch.Client
 }
 
 // Delete implements domain.BookService.
@@ -12,7 +22,23 @@ func (b *BookServiceES) Delete(bookID int) error {
 
 // Get implements domain.BookService.
 func (b *BookServiceES) Get(bookID int) (domain.BookData, error) {
-	panic("unimplemented")
+	res, err := b.es.Get("echo_books", fmt.Sprint(bookID))
+	if err != nil {
+		return domain.BookData{}, err
+	}
+
+	if res.IsError() {
+		return domain.BookData{}, errors.New(strings.Join(res.Warnings(), ","))
+	}
+
+	var result map[string]interface{}
+	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
+		log.Fatalf("Error parsing the response body: %s", err)
+	}
+
+	fmt.Println(result)
+
+	return domain.BookData{}, nil
 }
 
 // Insert implements domain.BookService.
@@ -30,6 +56,6 @@ func (b *BookServiceES) Update(data domain.BookData) (domain.BookData, error) {
 	panic("unimplemented")
 }
 
-func NewBookServiceES() domain.BookService {
-	return &BookServiceES{}
+func NewBookServiceES(es *elasticsearch.Client) domain.BookService {
+	return &BookServiceES{es}
 }
