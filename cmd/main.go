@@ -32,5 +32,9 @@ func main() {
 
 	router.SetupRoute(e, es)
 
+	for _, v := range e.Routes() {
+		fmt.Println(v.Method, "\t", v.Path, "-", "\t", v.Name)
+	}
 	e.Logger.Fatal(e.Start("127.0.0.1:1323"))
+
 }
