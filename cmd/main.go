@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/rezaif79-ri/echo-esearch/config"
 	"github.com/rezaif79-ri/echo-esearch/middleware"
 	"github.com/rezaif79-ri/echo-esearch/router"
 )
@@ -12,6 +13,11 @@ import (
 func main() {
 	e := echo.New()
 	middleware.SetEchoMiddleware(e)
+
+	es, err := config.InitElasticClient()
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
 
 	e.POST("/", func(c echo.Context) error {
 		var breq map[string]interface{}
@@ -24,7 +30,7 @@ func main() {
 		return c.JSON(http.StatusOK, map[string]interface{}{"data": "Hello, World!"})
 	})
 
-	router.SetupRoute(e)
+	router.SetupRoute(e, es)
 
 	e.Logger.Fatal(e.Start("127.0.0.1:1323"))
 }
