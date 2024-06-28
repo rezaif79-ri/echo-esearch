@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/rezaif79-ri/echo-esearch/middleware"
+	"github.com/rezaif79-ri/echo-esearch/router"
 )
 
 func main() {
@@ -22,5 +23,8 @@ func main() {
 
 		return c.JSON(http.StatusOK, map[string]interface{}{"data": "Hello, World!"})
 	})
+
+	router.SetupRoute(e)
+
 	e.Logger.Fatal(e.Start("127.0.0.1:1323"))
 }
