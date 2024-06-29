@@ -1,13 +1,11 @@
 package service
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/rezaif79-ri/echo-esearch/domain"
+	elasticbindutil "github.com/rezaif79-ri/echo-esearch/util/elastic_bind_util"
 )
 
 type BookServiceES struct {
@@ -22,20 +20,12 @@ func (b *BookServiceES) Delete(bookID int) error {
 // Get implements domain.BookService.
 func (b *BookServiceES) Get(bookID int) (domain.BookData, error) {
 	res, err := b.es.GetSource("echo_books", fmt.Sprint(bookID))
+
 	if err != nil {
 		return domain.BookData{}, err
 	}
 
-	if res.IsError() {
-		return domain.BookData{}, errors.New(strings.Join(res.Warnings(), ","))
-	}
-
-	var result domain.BookData
-	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
-		return domain.BookData{}, err
-	}
-
-	return result, nil
+	return elasticbindutil.HandleAndDecodeResponse[domain.BookData](res.StatusCode, res.Body)
 }
 
 // Insert implements domain.BookService.
