@@ -21,7 +21,7 @@ func (b *BookServiceES) Delete(bookID int) error {
 
 // Get implements domain.BookService.
 func (b *BookServiceES) Get(bookID int) (domain.BookData, error) {
-	res, err := b.es.Get("echo_books", fmt.Sprint(bookID))
+	res, err := b.es.GetSource("echo_books", fmt.Sprint(bookID))
 	if err != nil {
 		return domain.BookData{}, err
 	}
@@ -30,20 +30,12 @@ func (b *BookServiceES) Get(bookID int) (domain.BookData, error) {
 		return domain.BookData{}, errors.New(strings.Join(res.Warnings(), ","))
 	}
 
-	var result map[string]interface{}
+	var result domain.BookData
 	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
 		return domain.BookData{}, err
 	}
 
-	dataRes, err := json.Marshal(result["_source"])
-	if err != nil {
-		return domain.BookData{}, err
-	}
-
-	var data domain.BookData
-	json.Unmarshal(dataRes, &data)
-
-	return data, nil
+	return result, nil
 }
 
 // Insert implements domain.BookService.
