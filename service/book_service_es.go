@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
@@ -33,12 +32,18 @@ func (b *BookServiceES) Get(bookID int) (domain.BookData, error) {
 
 	var result map[string]interface{}
 	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
-		log.Fatalf("Error parsing the response body: %s", err)
+		return domain.BookData{}, err
 	}
 
-	fmt.Println(result)
+	dataRes, err := json.Marshal(result["_source"])
+	if err != nil {
+		return domain.BookData{}, err
+	}
 
-	return domain.BookData{}, nil
+	var data domain.BookData
+	json.Unmarshal(dataRes, &data)
+
+	return data, nil
 }
 
 // Insert implements domain.BookService.
