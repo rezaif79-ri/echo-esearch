@@ -1,5 +1,7 @@
 package domain
 
+import responseutil "github.com/rezaif79-ri/echo-esearch/util/response_util"
+
 type BookData struct {
 	BookID int    `json:"book_id"`
 	Title  string `json:"title"`
@@ -8,9 +10,9 @@ type BookData struct {
 }
 
 type BookService interface {
-	Get(bookID int) (BookData, error)
-	List(title string, sortID string) ([]BookData, error)
-	Insert(data BookData) (BookData, error)
-	Update(data BookData) (BookData, error)
-	Delete(bookID int) error
+	Get(bookID int) (BookData, responseutil.ControllerMeta)
+	List(title string, sortID string) ([]BookData, responseutil.ControllerMeta)
+	Insert(data BookData) (BookData, responseutil.ControllerMeta)
+	Update(data BookData) (BookData, responseutil.ControllerMeta)
+	Delete(bookID int) responseutil.ControllerMeta
 }

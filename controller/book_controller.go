@@ -29,12 +29,12 @@ func (b *BookController) GetBookByID(c echo.Context) error {
 		))
 	}
 
-	book, err := b.bookService.Get(bookID)
-	if err != nil {
-		return c.JSON(http.StatusConflict, responseutil.Rest(
-			http.StatusConflict,
-			err.Error(),
-			nil,
+	book, meta := b.bookService.Get(bookID)
+	if meta.Error != nil {
+		return c.JSON(meta.Status, responseutil.Rest(
+			meta.Status,
+			meta.Message,
+			echo.Map{"error": meta.Error.Error()},
 		))
 	}
 
