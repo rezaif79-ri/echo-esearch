@@ -44,3 +44,20 @@ func (b *BookController) GetBookByID(c echo.Context) error {
 		book,
 	))
 }
+
+func (b *BookController) Count(c echo.Context) error {
+	count, meta := b.bookService.Count()
+	if meta.Error != nil {
+		return c.JSON(meta.Status, responseutil.Rest(
+			meta.Status,
+			meta.Message,
+			echo.Map{"error": meta.Error.Error()},
+		))
+	}
+
+	return c.JSON(http.StatusOK, responseutil.Rest(
+		http.StatusOK,
+		"OK",
+		echo.Map{"count": count},
+	))
+}
