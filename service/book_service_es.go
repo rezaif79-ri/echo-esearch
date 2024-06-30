@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/rezaif79-ri/echo-esearch/domain"
 	elasticbindutil "github.com/rezaif79-ri/echo-esearch/util/elastic_bind_util"
 	responseutil "github.com/rezaif79-ri/echo-esearch/util/response_util"
@@ -53,6 +54,35 @@ func (b *BookServiceES) List(title string, sortID string) ([]domain.BookData, re
 // Update implements domain.BookService.
 func (b *BookServiceES) Update(data domain.BookData) (domain.BookData, responseutil.ControllerMeta) {
 	panic("unimplemented")
+}
+
+// Count implements domain.BookService.
+func (b *BookServiceES) Count() (int, responseutil.ControllerMeta) {
+
+	res, err := b.es.Count(func(r *esapi.CountRequest) {
+		r.Index = append(r.Index, "echo_books")
+	})
+
+	if err != nil {
+		return 0, responseutil.ControllerMeta{
+			Status:  http.StatusInternalServerError,
+			Error:   err,
+			Message: "Encountered unexpected error",
+		}
+	}
+
+	type Count struct {
+		Count int `json:"count"`
+	}
+	count, err := elasticbindutil.HandleAndDecodeResponse[Count](res.StatusCode, res.Body)
+	if err != nil {
+		return 0, responseutil.ControllerMeta{
+			Status:  res.StatusCode,
+			Error:   err,
+			Message: "Failed to fetch document count",
+		}
+	}
+	return count.Count, responseutil.ControllerMeta{}
 }
 
 func NewBookServiceES(es *elasticsearch.Client) domain.BookService {

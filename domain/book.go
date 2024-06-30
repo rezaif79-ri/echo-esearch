@@ -15,4 +15,5 @@ type BookService interface {
 	Insert(data BookData) (BookData, responseutil.ControllerMeta)
 	Update(data BookData) (BookData, responseutil.ControllerMeta)
 	Delete(bookID int) responseutil.ControllerMeta
+	Count() (int, responseutil.ControllerMeta)
 }
