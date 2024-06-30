@@ -7,3 +7,9 @@ func Rest(status int, message string, data interface{}) map[string]interface{} {
 		"data":    data,
 	}
 }
+
+type ControllerMeta struct {
+	Status  int
+	Error   error
+	Message string
+}
