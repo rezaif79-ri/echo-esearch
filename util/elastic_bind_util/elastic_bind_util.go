@@ -3,7 +3,6 @@ package elasticbindutil
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 )
 
@@ -31,14 +30,12 @@ func HandleAndDecodeResponse[dest any](status int, resource io.ReadCloser) (dest
 		if err := json.NewDecoder(resource).Decode(&err); err != nil {
 			return result, err
 		}
-		fmt.Println("err404", err)
 		return result, errors.New(err.Error.Reason)
 	} else if status == 405 {
 		var err MethodNotAllowedError
 		if err := json.NewDecoder(resource).Decode(&err); err != nil {
 			return result, err
 		}
-		fmt.Println("err405", err)
 
 		return result, errors.New(err.Error)
 	}
