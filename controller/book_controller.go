@@ -63,15 +63,6 @@ func (b *BookController) Count(c echo.Context) error {
 }
 
 func (b *BookController) Insert(c echo.Context) error {
-	count, meta := b.bookService.Count()
-	if meta.Error != nil {
-		return c.JSON(meta.Status, responseutil.Rest(
-			meta.Status,
-			meta.Message,
-			echo.Map{"error": meta.Error.Error()},
-		))
-	}
-
 	var InsertBook domain.BookData
 	if err := c.Bind(&InsertBook); err != nil {
 		return c.JSON(http.StatusConflict, responseutil.Rest(
@@ -80,7 +71,6 @@ func (b *BookController) Insert(c echo.Context) error {
 			echo.Map{"error": err.Error()},
 		))
 	}
-	InsertBook.BookID = count + 1
 
 	data, meta := b.bookService.Insert(InsertBook)
 	if meta.Error != nil {
