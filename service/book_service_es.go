@@ -1,6 +1,8 @@
 package service
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -43,7 +45,50 @@ func (b *BookServiceES) Get(bookID int) (domain.BookData, responseutil.Controlle
 
 // Insert implements domain.BookService.
 func (b *BookServiceES) Insert(data domain.BookData) (domain.BookData, responseutil.ControllerMeta) {
-	panic("unimplemented")
+	res, err := b.es.Count(func(r *esapi.CountRequest) {
+		r.Index = append(r.Index, "echo_books")
+	})
+
+	if err != nil {
+		return data, responseutil.ControllerMeta{
+			Status:  http.StatusInternalServerError,
+			Error:   err,
+			Message: "Encountered unexpected error",
+		}
+	}
+
+	type Count struct {
+		Count int `json:"count"`
+	}
+	count, err := elasticbindutil.HandleAndDecodeResponse[Count](res.StatusCode, res.Body)
+	if err != nil {
+		return data, responseutil.ControllerMeta{
+			Status:  res.StatusCode,
+			Error:   err,
+			Message: "Failed to fetch document count",
+		}
+	}
+
+	bdata, err := json.Marshal(data)
+	if err != nil {
+		return data, responseutil.ControllerMeta{
+			Status:  http.StatusConflict,
+			Error:   err,
+			Message: "Failed to create insert request",
+		}
+	}
+	body := bytes.NewReader(bdata)
+
+	res, err = b.es.Create("echo_books", fmt.Sprint(count), body)
+	if err != nil {
+		return data, responseutil.ControllerMeta{
+			Status:  res.StatusCode,
+			Error:   err,
+			Message: "Failed to insert books",
+		}
+	}
+
+	return data, responseutil.ControllerMeta{}
 }
 
 // List implements domain.BookService.
