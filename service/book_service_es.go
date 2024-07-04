@@ -3,7 +3,6 @@ package service
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/elastic/go-elasticsearch/v8"
@@ -19,8 +18,8 @@ type BookServiceES struct {
 }
 
 // Delete implements domain.BookService.
-func (b *BookServiceES) Delete(bookID int) responseutil.ControllerMeta {
-	_, err := b.es.Delete("echo_books", fmt.Sprint(bookID))
+func (b *BookServiceES) Delete(bookID string) responseutil.ControllerMeta {
+	_, err := b.es.Delete("echo_books", bookID)
 	if err != nil {
 		return responseutil.ControllerMeta{
 			Status:  http.StatusInternalServerError,
@@ -32,8 +31,8 @@ func (b *BookServiceES) Delete(bookID int) responseutil.ControllerMeta {
 }
 
 // Get implements domain.BookService.
-func (b *BookServiceES) Get(bookID int) (domain.BookData, responseutil.ControllerMeta) {
-	res, err := b.es.GetSource("echo_books", fmt.Sprint(bookID))
+func (b *BookServiceES) Get(bookID string) (domain.BookData, responseutil.ControllerMeta) {
+	res, err := b.es.GetSource("echo_books", bookID)
 
 	if err != nil {
 		return domain.BookData{}, responseutil.ControllerMeta{
@@ -74,7 +73,7 @@ func (b *BookServiceES) Insert(data domain.BookData) (domain.BookData, responseu
 	}
 	body := bytes.NewReader(bdata)
 
-	res, err := b.es.Create("echo_books", fmt.Sprint(data.BookID), body)
+	res, err := b.es.Create("echo_books", data.BookID, body)
 	if err != nil {
 		return data, responseutil.ControllerMeta{
 			Status:  res.StatusCode,
@@ -103,7 +102,7 @@ func (b *BookServiceES) Update(data domain.BookData) (domain.BookData, responseu
 	}
 	body := bytes.NewReader(bdata)
 
-	res, err := b.es.Update("echo_books", fmt.Sprint(data.BookID), body)
+	res, err := b.es.Update("echo_books", data.BookID, body)
 	if err != nil {
 		return data, responseutil.ControllerMeta{
 			Status:  res.StatusCode,

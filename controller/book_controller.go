@@ -2,7 +2,6 @@ package controller
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/rezaif79-ri/echo-esearch/domain"
@@ -20,16 +19,9 @@ func NewBookController(bookService domain.BookService) *BookController {
 }
 
 func (b *BookController) GetBookByID(c echo.Context) error {
-	bookID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return c.JSON(http.StatusConflict, responseutil.Rest(
-			http.StatusConflict,
-			err.Error(),
-			nil,
-		))
-	}
+	id := c.Param("id")
 
-	book, meta := b.bookService.Get(bookID)
+	book, meta := b.bookService.Get(id)
 	if meta.Error != nil {
 		return c.JSON(meta.Status, responseutil.Rest(
 			meta.Status,
