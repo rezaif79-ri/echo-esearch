@@ -98,7 +98,26 @@ func (b *BookServiceES) List(title string, sortID string) ([]domain.BookData, re
 
 // Update implements domain.BookService.
 func (b *BookServiceES) Update(data domain.BookData) (domain.BookData, responseutil.ControllerMeta) {
-	panic("unimplemented")
+	bdata, err := json.Marshal(data)
+	if err != nil {
+		return data, responseutil.ControllerMeta{
+			Status:  http.StatusConflict,
+			Error:   err,
+			Message: "Failed to create insert request",
+		}
+	}
+	body := bytes.NewReader(bdata)
+
+	res, err := b.es.Update("echo_books", fmt.Sprint(data.BookID), body)
+	if err != nil {
+		return data, responseutil.ControllerMeta{
+			Status:  res.StatusCode,
+			Error:   err,
+			Message: "Failed to insert books",
+		}
+	}
+
+	return data, responseutil.ControllerMeta{}
 }
 
 // Count implements domain.BookService.
