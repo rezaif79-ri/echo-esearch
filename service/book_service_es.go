@@ -19,7 +19,15 @@ type BookServiceES struct {
 
 // Delete implements domain.BookService.
 func (b *BookServiceES) Delete(bookID int) responseutil.ControllerMeta {
-	panic("unimplemented")
+	_, err := b.es.Delete("echo_books", fmt.Sprint(bookID))
+	if err != nil {
+		return responseutil.ControllerMeta{
+			Status:  http.StatusInternalServerError,
+			Error:   err,
+			Message: "Encountered unexpected error",
+		}
+	}
+	return responseutil.ControllerMeta{}
 }
 
 // Get implements domain.BookService.
