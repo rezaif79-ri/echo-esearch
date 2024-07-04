@@ -3,7 +3,7 @@ package domain
 import responseutil "github.com/rezaif79-ri/echo-esearch/util/response_util"
 
 type BookData struct {
-	BookID int    `json:"book_id"`
+	BookID string `json:"book_id"`
 	Title  string `json:"title"`
 	Pages  int    `json:"pages"`
 	Author string `json:"author"`

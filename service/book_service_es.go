@@ -8,6 +8,7 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"github.com/google/uuid"
 	"github.com/rezaif79-ri/echo-esearch/domain"
 	elasticbindutil "github.com/rezaif79-ri/echo-esearch/util/elastic_bind_util"
 	responseutil "github.com/rezaif79-ri/echo-esearch/util/response_util"
@@ -53,30 +54,16 @@ func (b *BookServiceES) Get(bookID int) (domain.BookData, responseutil.Controlle
 
 // Insert implements domain.BookService.
 func (b *BookServiceES) Insert(data domain.BookData) (domain.BookData, responseutil.ControllerMeta) {
-	res, err := b.es.Count(func(r *esapi.CountRequest) {
-		r.Index = append(r.Index, "echo_books")
-	})
-
+	uID, err := uuid.NewV7()
 	if err != nil {
 		return data, responseutil.ControllerMeta{
-			Status:  http.StatusInternalServerError,
+			Status:  http.StatusConflict,
 			Error:   err,
-			Message: "Encountered unexpected error",
+			Message: "Failed to generate book id",
 		}
 	}
 
-	type Count struct {
-		Count int `json:"count"`
-	}
-	count, err := elasticbindutil.HandleAndDecodeResponse[Count](res.StatusCode, res.Body)
-	if err != nil {
-		return data, responseutil.ControllerMeta{
-			Status:  res.StatusCode,
-			Error:   err,
-			Message: "Failed to fetch document count",
-		}
-	}
-
+	data.BookID = uID.String()
 	bdata, err := json.Marshal(data)
 	if err != nil {
 		return data, responseutil.ControllerMeta{
@@ -87,7 +74,7 @@ func (b *BookServiceES) Insert(data domain.BookData) (domain.BookData, responseu
 	}
 	body := bytes.NewReader(bdata)
 
-	res, err = b.es.Create("echo_books", fmt.Sprint(count.Count+1), body)
+	res, err := b.es.Create("echo_books", fmt.Sprint(data.BookID), body)
 	if err != nil {
 		return data, responseutil.ControllerMeta{
 			Status:  res.StatusCode,

@@ -88,14 +88,7 @@ func (b *BookController) Insert(c echo.Context) error {
 }
 
 func (b *BookController) Update(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return c.JSON(http.StatusConflict, responseutil.Rest(
-			http.StatusConflict,
-			"Book ID must be an integer",
-			echo.Map{"error": err.Error()},
-		))
-	}
+	id := c.Param("id")
 
 	var UpdateBook domain.BookData
 	if err := c.Bind(&UpdateBook); err != nil {
