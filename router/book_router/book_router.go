@@ -13,5 +13,6 @@ func Route(e *echo.Group, es *elasticsearch.Client) {
 
 	e.POST("", bookController.Insert)
 	e.GET("/:id", bookController.GetBookByID)
+	e.GET("/:id", bookController.Update)
 	e.GET("/count", bookController.Count)
 }

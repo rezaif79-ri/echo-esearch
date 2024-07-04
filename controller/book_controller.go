@@ -96,3 +96,38 @@ func (b *BookController) Insert(c echo.Context) error {
 		"OK",
 		data))
 }
+
+func (b *BookController) Update(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusConflict, responseutil.Rest(
+			http.StatusConflict,
+			"Book ID must be an integer",
+			echo.Map{"error": err.Error()},
+		))
+	}
+
+	var UpdateBook domain.BookData
+	if err := c.Bind(&UpdateBook); err != nil {
+		return c.JSON(http.StatusConflict, responseutil.Rest(
+			http.StatusConflict,
+			"Failed to bind request body",
+			echo.Map{"error": err.Error()},
+		))
+	}
+	UpdateBook.BookID = id
+
+	data, meta := b.bookService.Update(UpdateBook)
+	if meta.Error != nil {
+		return c.JSON(meta.Status, responseutil.Rest(
+			meta.Status,
+			meta.Message,
+			echo.Map{"error": meta.Error.Error()},
+		))
+	}
+
+	return c.JSON(http.StatusCreated, responseutil.Rest(
+		http.StatusCreated,
+		"OK",
+		data))
+}
