@@ -87,7 +87,7 @@ func (b *BookServiceES) Insert(data domain.BookData) (domain.BookData, responseu
 	}
 	body := bytes.NewReader(bdata)
 
-	res, err = b.es.Create("echo_books", fmt.Sprint(count), body)
+	res, err = b.es.Create("echo_books", fmt.Sprint(count.Count+1), body)
 	if err != nil {
 		return data, responseutil.ControllerMeta{
 			Status:  res.StatusCode,
