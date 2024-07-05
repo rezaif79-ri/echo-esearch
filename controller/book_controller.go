@@ -106,3 +106,19 @@ func (b *BookController) Update(c echo.Context) error {
 		"OK",
 		data))
 }
+
+func (b *BookController) List(c echo.Context) error {
+	data, meta := b.bookService.List(c.QueryParam("title"), c.QueryParam("sort_title"))
+	if meta.Error != nil {
+		return c.JSON(meta.Status, responseutil.Rest(
+			meta.Status,
+			meta.Message,
+			echo.Map{"error": meta.Error.Error()},
+		))
+	}
+
+	return c.JSON(http.StatusCreated, responseutil.Rest(
+		http.StatusCreated,
+		"OK",
+		data))
+}

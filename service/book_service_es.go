@@ -3,7 +3,9 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
@@ -86,13 +88,68 @@ func (b *BookServiceES) Insert(data domain.BookData) (domain.BookData, responseu
 }
 
 // List implements domain.BookService.
-func (b *BookServiceES) List(title string, sortID string) ([]domain.BookData, responseutil.ControllerMeta) {
-	panic("unimplemented")
+func (b *BookServiceES) List(title string, sortTitle string) ([]domain.BookData, responseutil.ControllerMeta) {
+	var searchQuery []string
+
+	if title != "" {
+		searchQuery = append(searchQuery, `
+			"query":{
+				"fuzzy":{
+					"title": "`+title+`"
+				}
+			}`)
+	}
+
+	if sortTitle = strings.ToLower(sortTitle); sortTitle == "asc" || sortTitle == "desc" && sortTitle != "" {
+		searchQuery = append(searchQuery, `
+			"sort" : [
+				{ "title.keyword" :"`+sortTitle+`" }
+			]
+		`)
+	}
+	res, err := b.es.Search(
+		b.es.Search.WithIndex("echo_books"),
+		b.es.Search.WithBody(strings.NewReader(`
+		{
+			`+strings.Join(searchQuery, ",")+`
+		}`)),
+	)
+
+	fmt.Println(`
+		{
+			` + strings.Join(searchQuery, ",") + `
+		}`)
+	if err != nil {
+		return nil, responseutil.ControllerMeta{
+			Status:  res.StatusCode,
+			Error:   err,
+			Message: "Failed to query books",
+		}
+	}
+
+	data, err := elasticbindutil.HandleAndDecodeResponse[domain.EsSearchResponse[domain.BookData]](res.StatusCode, res.Body)
+	if err != nil {
+		return nil, responseutil.ControllerMeta{
+			Status:  res.StatusCode,
+			Error:   err,
+			Message: "Failed to search books",
+		}
+	}
+
+	var books []domain.BookData
+	for _, v := range data.Hits.Hits {
+		books = append(books, v.Source)
+	}
+
+	return books, responseutil.ControllerMeta{}
 }
 
 // Update implements domain.BookService.
 func (b *BookServiceES) Update(data domain.BookData) (domain.BookData, responseutil.ControllerMeta) {
-	bdata, err := json.Marshal(data)
+	var script = map[string]interface{}{
+		"doc": data,
+	}
+	bdata, err := json.Marshal(script)
 	if err != nil {
 		return data, responseutil.ControllerMeta{
 			Status:  http.StatusConflict,
