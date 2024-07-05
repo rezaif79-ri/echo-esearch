@@ -11,7 +11,7 @@ type BookData struct {
 
 type BookService interface {
 	Get(bookID string) (BookData, responseutil.ControllerMeta)
-	List(title string, sortID string) ([]BookData, responseutil.ControllerMeta)
+	List(title string, sortTitle string) ([]BookData, responseutil.ControllerMeta)
 	Insert(data BookData) (BookData, responseutil.ControllerMeta)
 	Update(data BookData) (BookData, responseutil.ControllerMeta)
 	Delete(bookID string) responseutil.ControllerMeta
