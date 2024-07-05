@@ -30,8 +30,7 @@ func HandleAndDecodeResponse[dest any](status int, resource io.ReadCloser) (dest
 	// json.NewDecoder(resource).Decode(&debugAny)
 
 	// log.Println(debugAny)
-
-	if status == 404 {
+	if status == 404 || status == 400 {
 		var err NotFoundError
 		if err := json.NewDecoder(resource).Decode(&err); err != nil {
 			return result, err
