@@ -94,7 +94,7 @@ func (b *BookServiceES) List(title string, sortTitle string) ([]domain.BookData,
 	if title != "" {
 		searchQuery = append(searchQuery, `
 			"query":{
-				"fuzzy":{
+				"match":{
 					"title": "`+title+`"
 				}
 			}`)
